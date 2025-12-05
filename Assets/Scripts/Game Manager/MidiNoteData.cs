@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MidiNoteData : MonoBehaviour
+public class MidiNoteData
 {
     public float StartTime, Duration;
 

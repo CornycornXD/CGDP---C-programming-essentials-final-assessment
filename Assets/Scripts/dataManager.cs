@@ -8,10 +8,17 @@ public class dataManager : MonoBehaviour
     public List<SongData> SongLibrary = new List<SongData>();
     public int TotalStars = 0;
     private static dataManager Instance;
+    bool _programStartFlag = true;
     int _songIndex;
     string _currentLevelDifficulty = "Easy";
     // only loads data to these variables in dataManager when stage is completed
     // all player stats info are reset upon clicking back to menu only when stage is completed
+    public bool ProgramStartFlag
+    {
+        get { return _programStartFlag; }
+        set { _programStartFlag = value; }
+    }
+
     public int SongIndex {
         get { return _songIndex; }
         set { _songIndex = value; }

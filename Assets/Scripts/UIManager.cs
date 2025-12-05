@@ -10,63 +10,34 @@ using System.ComponentModel.Design;
 using System.Collections.Generic;
 
 public class UIManager : MonoBehaviour {
-    /* Shits to do:
-     * 1. create scripts for each of the button as they're prefabs and copy the prefab to different scenes as UI manager is pointing at prefab elements
-     
-     */
-    public List<performanceRankSprite> performanceRankSpriteStorage = new List<performanceRankSprite>();
+
     // Retrieve UI screens obj
-    public GameObject MainMenuUI, SongSelectionUI, DifficultySelectionUI, SettingsUI, StageFailedUI, StageClearedUI, PauseUI, InGameHUD;
+    public GameObject MainMenuUI, SongSelectionUI, DifficultySelectionUI, SettingsUI;
 
     // Retrieve UI elements within mainMenu
     public Button MainMenuToSongSelectionButton, SetingsButton, ExitButton;
 
     // Retrieve UI elements within songSelection
-    public GameObject SongContainer1, SongContainer2, SongContainer3, LockedLayerContainer1, LockedLayerContainer2, LockedLayerContainer3, ErrorMessage;
-    public Image Image1, Image2, Image3;
-    public TextMeshProUGUI TotalStars, SongLibraryProgressBarValue, SongName1, ArtistName1, Year1, Duration1, SongName2, ArtistName2, Year2, Duration2, SongName3, ArtistName3, Year3, Duration3;
+    public GameObject SongContainerLeft, SongContainerMiddle, SongContainerRight, LockedLayerContainerLeft, LockedLayerContainerMiddle, LockedLayerContainerRight, ErrorMessage;
+    public Image SongSpriteLeft, SongSpriteMiddle, SongSpriteRight;
+    public TextMeshProUGUI TotalStars, SongLibraryProgressBarValue, SongNameLeft, ArtistNameLeft, YearLeft, DurationLeft, SongNameMiddle, ArtistNameMiddle, YearMiddle, DurationMiddle, SongNameRight, ArtistNameRight, YearRight, DurationRight;
     public Slider SongLibraryProgressBar;
     public Button NextSongButton, PreviousSongButton, SelectSongButton, SongSelectionToMainMenuButton;
 
     // Retrieve UI elements within difficultySelection
-    public Image SelectedSongImage, EasyModeImage, MediumModeImage, HardModeImage, Objective1Image, Objective2Image, Objective3Image;
+    public Image SelectedSongSprite, EasyModeSprite, MediumModeSprite, HardModeSprite, Objective1Sprite, Objective2Sprite, Objective3Sprite;
     public TextMeshProUGUI SelectedSongName, SelectedSongArtist, SelectedSongYear, SelectedSongDuration;
     public Button EasyModeButton, MediumModeButton, HardModeButton, PlayButton, DifficultySelectionToSongSelectionButton;
-
-    // Retrieve UI elements within pauseMenu
-    public Button PauseMenuResumeButton, PauseMenuRetryButton, QuitButton;
-
-    // Retrieve UI elements within stageCleared
-    public TextMeshProUGUI StageClearedSongName, StageClearedArtistName, Accuracy, Score, Combo, PerfectCount, GreatCount, GoodCount, OkayCount, MissCount;
-    public Image StageClearedPerformanceRankImage, StageClearedObjective1Image, StageClearedObjective2Image, StageClearedObjective3Image;
-    public Button StageClearedRetryButton, StageClearedToDifficultySelectionButton;
-
-    // Retrieve UI elements within stageFailed
-    public Button StageFailedRetryButton, StageFailedToDifficultySelectionButton;
-
-    // Retrieve HUD elements within gameplay
-    public Slider HPBar, FeverBar, ProgressBar;
-    public TextMeshProUGUI ScoreDisplay, ComboDisplay, MultiplierDisplay, AccuracyDisplay;
 
     // retrieve UI elements within settingsUI
     public Slider VolumeSlider;
 
     // Retrieve scripts
     dataManager _dataManager;
-    gameplayManager _gameplayManager;
-    MidiParser _midiParser;
-    playerHandler _playerHandler;
 
     // Singleton instance
-    private static UIManager instance;
     private void Awake() {
         _dataManager = GameObject.Find("Data Manager").GetComponent<dataManager>();
-        if (instance == null) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        } else { 
-            Destroy(gameObject);
-        }
     }
 
     private void Start()
@@ -77,10 +48,6 @@ public class UIManager : MonoBehaviour {
 
         // Initialization of settings volumeSlider's value
         VolumeSlider.value = AudioListener.volume;
-
-        // Load main menu
-        SceneManager.LoadScene("Hub");
-        MainMenuUI.SetActive(true);
 
         // Event listeners for mainMenu buttons
         MainMenuToSongSelectionButton.onClick.AddListener(mainMenuPlayButtonPressed);
@@ -100,42 +67,35 @@ public class UIManager : MonoBehaviour {
         PlayButton.onClick.AddListener(startLevel);
         DifficultySelectionToSongSelectionButton.onClick.AddListener(difficultySelectionToSongSelection);
 
-        // Event listeners for pause buttons
-        PauseMenuResumeButton.onClick.AddListener(pauseMenuResumeButtonPressed);
-        PauseMenuRetryButton.onClick.AddListener(pauseMenuRetryButtonPressed);
-        QuitButton.onClick.AddListener(pauseMenuToDifficultySelection);
-
-        // Event listeners for stageFailed buttons
-        StageFailedRetryButton.onClick.AddListener(stageFailedRetryButtonPressed);
-        StageFailedToDifficultySelectionButton.onClick.AddListener(stageFailedToDifficultySelection);
-
-        // Event listeners for stageCleared buttons
-        StageClearedRetryButton.onClick.AddListener(stageClearedRetryButtonPressed);
-        StageClearedToDifficultySelectionButton.onClick.AddListener(stageClearedToDifficultySelection);
-
         // Event listeners for settings volumeSlider
         VolumeSlider.onValueChanged.AddListener(updateVolume);
 
-    }
-
-    private void Update()
-    {
-        // Update in-game HUDs if in gameplay scene
-        if (SceneManager.GetActiveScene().name == "Gameplay")
+        if (!_dataManager.ProgramStartFlag)
         {
-            if (InGameHUD.activeSelf == false)
+            // Load difficulty selection UI when coming back from gameplay scene
+            DifficultySelectionUI.SetActive(true);
+            displaySelectedSongContainer();
+            displayObjectives();
+            switch (_dataManager.CurrentLevelDifficulty)
             {
-                InGameHUD.SetActive(true);
+                case "Easy":
+                    easyModeSelected();
+                    break;
+                case "Medium":
+                    mediumModeSelected();
+                    break;
+                case "Hard":
+                    hardModeSelected();
+                    break;
             }
-            hpBarUpdate();
-            feverBarUpdate();
-            progressBarUpdate();
-            scoreDisplayUpdate();
-            comboDisplayUpdate();
-            multiplierDisplayUpdate();
-            accuracyDisplayUpdate();
+        }
+        else { 
+            // Load main menu UI at the start of the program
+            MainMenuUI.SetActive(true);
+            _dataManager.ProgramStartFlag = false;
         }
     }
+
     // Interactions
 
     // Interactions within mainMenu
@@ -181,164 +141,164 @@ public class UIManager : MonoBehaviour {
     public void updateSongContainers() {
         if (_dataManager.SongIndex == 0)
         {
-            if (LockedLayerContainer1.activeSelf) { 
-                LockedLayerContainer1.SetActive(false);
+            if (LockedLayerContainerLeft.activeSelf) { 
+                LockedLayerContainerLeft.SetActive(false);
             }
-            SongContainer1.SetActive(false);
+            SongContainerLeft.SetActive(false);
             // middle container
-            Image2.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
-            SongName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
-            ArtistName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
-            Year2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
-            Duration2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
+            SongSpriteMiddle.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
+            SongNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
+            ArtistNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
+            YearMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
+            DurationMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex].StarsRequired)
             {
-                if (!LockedLayerContainer2.activeSelf)
+                if (!LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(true);
+                    LockedLayerContainerMiddle.SetActive(true);
                 }
             }
             else {
-                if (LockedLayerContainer2.activeSelf)
+                if (LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(false);
+                    LockedLayerContainerMiddle.SetActive(false);
                 }
             }
             // right container
-            Image3.sprite = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongSprite;
-            SongName3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongName;
-            ArtistName3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].ArtistName;
-            Year3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Year.ToString();
-            Duration3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Duration;
+            SongSpriteRight.sprite = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongSprite;
+            SongNameRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongName;
+            ArtistNameRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].ArtistName;
+            YearRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Year.ToString();
+            DurationRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex + 1].StarsRequired)
             {
-                if (!LockedLayerContainer3.activeSelf)
+                if (!LockedLayerContainerRight.activeSelf)
                 {
-                    LockedLayerContainer3.SetActive(true);
+                    LockedLayerContainerRight.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer3.activeSelf)
+                if (LockedLayerContainerRight.activeSelf)
                 {
-                    LockedLayerContainer3.SetActive(false);
+                    LockedLayerContainerRight.SetActive(false);
                 }
             }
         }
         else if (_dataManager.SongIndex == _dataManager.SongLibrary.Count - 1)
         {
-            if (LockedLayerContainer3.activeSelf)
+            if (LockedLayerContainerRight.activeSelf)
             {
-                LockedLayerContainer3.SetActive(false);
+                LockedLayerContainerRight.SetActive(false);
             }
-            SongContainer3.SetActive(false);
+            SongContainerRight.SetActive(false);
             // left container
-            Image1.sprite = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongSprite;
-            SongName1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongName;
-            ArtistName1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].ArtistName;
-            Year1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Year.ToString();
-            Duration1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Duration;
+            SongSpriteLeft.sprite = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongSprite;
+            SongNameLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongName;
+            ArtistNameLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].ArtistName;
+            YearLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Year.ToString();
+            DurationLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex - 1].StarsRequired)
             {
-                if (!LockedLayerContainer1.activeSelf)
+                if (!LockedLayerContainerLeft.activeSelf)
                 {
-                    LockedLayerContainer1.SetActive(true);
+                    LockedLayerContainerLeft.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer1.activeSelf)
+                if (LockedLayerContainerLeft.activeSelf)
                 {
-                    LockedLayerContainer1.SetActive(false);
+                    LockedLayerContainerLeft.SetActive(false);
                 }
             }
             // middle container
-            Image2.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
-            SongName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
-            ArtistName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
-            Year2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
-            Duration2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
+            SongSpriteMiddle.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
+            SongNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
+            ArtistNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
+            YearMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
+            DurationMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex].StarsRequired)
             {
-                if (!LockedLayerContainer2.activeSelf)
+                if (!LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(true);
+                    LockedLayerContainerMiddle.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer2.activeSelf)
+                if (LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(false);
+                    LockedLayerContainerMiddle.SetActive(false);
                 }
             }
         }
         else if (_dataManager.SongIndex > 0 && _dataManager.SongIndex < _dataManager.SongLibrary.Count - 1)
         {
-            if (!SongContainer1.activeSelf) {
-                SongContainer1.SetActive(true);
+            if (!SongContainerLeft.activeSelf) {
+                SongContainerLeft.SetActive(true);
             }
-            if (!SongContainer3.activeSelf) {
-                SongContainer3.SetActive(true);
+            if (!SongContainerRight.activeSelf) {
+                SongContainerRight.SetActive(true);
             }
             // left container
-            Image1.sprite = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongSprite;
-            SongName1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongName;
-            ArtistName1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].ArtistName;
-            Year1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Year.ToString();
-            Duration1.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Duration;
+            SongSpriteLeft.sprite = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongSprite;
+            SongNameLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].SongName;
+            ArtistNameLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].ArtistName;
+            YearLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Year.ToString();
+            DurationLeft.text = _dataManager.SongLibrary[_dataManager.SongIndex - 1].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex - 1].StarsRequired)
             {
-                if (!LockedLayerContainer1.activeSelf)
+                if (!LockedLayerContainerLeft.activeSelf)
                 {
-                    LockedLayerContainer1.SetActive(true);
+                    LockedLayerContainerLeft.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer1.activeSelf)
+                if (LockedLayerContainerLeft.activeSelf)
                 {
-                    LockedLayerContainer1.SetActive(false);
+                    LockedLayerContainerLeft.SetActive(false);
                 }
             }
             // middle container
-            Image2.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
-            SongName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
-            ArtistName2.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
-            Year2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
-            Duration2.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
+            SongSpriteMiddle.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
+            SongNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
+            ArtistNameMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
+            YearMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
+            DurationMiddle.text = _dataManager.SongLibrary[_dataManager.SongIndex].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex].StarsRequired)
             {
-                if (!LockedLayerContainer2.activeSelf)
+                if (!LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(true);
+                    LockedLayerContainerMiddle.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer2.activeSelf)
+                if (LockedLayerContainerMiddle.activeSelf)
                 {
-                    LockedLayerContainer2.SetActive(false);
+                    LockedLayerContainerMiddle.SetActive(false);
                 }
             }
             // right container
-            Image3.sprite = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongSprite;
-            SongName3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongName;
-            ArtistName3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].ArtistName;
-            Year3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Year.ToString();
-            Duration3.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Duration;
+            SongSpriteRight.sprite = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongSprite;
+            SongNameRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].SongName;
+            ArtistNameRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].ArtistName;
+            YearRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Year.ToString();
+            DurationRight.text = _dataManager.SongLibrary[_dataManager.SongIndex + 1].Duration;
             if (_dataManager.TotalStars < _dataManager.SongLibrary[_dataManager.SongIndex + 1].StarsRequired)
             {
-                if (!LockedLayerContainer3.activeSelf)
+                if (!LockedLayerContainerRight.activeSelf)
                 {
-                    LockedLayerContainer3.SetActive(true);
+                    LockedLayerContainerRight.SetActive(true);
                 }
             }
             else
             {
-                if (LockedLayerContainer3.activeSelf)
+                if (LockedLayerContainerRight.activeSelf)
                 {
-                    LockedLayerContainer3.SetActive(false);
+                    LockedLayerContainerRight.SetActive(false);
                 }
             }
         }
@@ -378,7 +338,7 @@ public class UIManager : MonoBehaviour {
     // Interactions within difficultySelection
     public void displaySelectedSongContainer()
     {
-        SelectedSongImage.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
+        SelectedSongSprite.sprite = _dataManager.SongLibrary[_dataManager.SongIndex].SongSprite;
         SelectedSongName.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
         SelectedSongArtist.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
         SelectedSongYear.text = _dataManager.SongLibrary[_dataManager.SongIndex].Year.ToString();
@@ -409,87 +369,87 @@ public class UIManager : MonoBehaviour {
     public void displayDifficulties() {
         switch (_dataManager.CurrentLevelDifficulty) {
             case "Easy":
-                if (EasyModeImage.color != Color.black)
+                if (EasyModeSprite.color != Color.black)
                 {
-                    EasyModeImage.color = Color.black;
+                    EasyModeSprite.color = Color.black;
                 }
-                if (MediumModeImage.color != Color.white) {
-                    MediumModeImage.color = Color.white;
+                if (MediumModeSprite.color != Color.white) {
+                    MediumModeSprite.color = Color.white;
                 }
-                if (HardModeImage.color != Color.white)
+                if (HardModeSprite.color != Color.white)
                 {
-                    HardModeImage.color = Color.white;
+                    HardModeSprite.color = Color.white;
                 }
                 break;
             case "Medium":
-                if (EasyModeImage.color != Color.white)
+                if (EasyModeSprite.color != Color.white)
                 {
-                    EasyModeImage.color = Color.white;
+                    EasyModeSprite.color = Color.white;
                 }
-                if (MediumModeImage.color != Color.black)
+                if (MediumModeSprite.color != Color.black)
                 {
-                    MediumModeImage.color = Color.black;
+                    MediumModeSprite.color = Color.black;
                 }
-                if (HardModeImage.color != Color.white)
+                if (HardModeSprite.color != Color.white)
                 {
-                    HardModeImage.color = Color.white;
+                    HardModeSprite.color = Color.white;
                 }
                 break;
             case "Hard":
-                if (EasyModeImage.color != Color.white)
+                if (EasyModeSprite.color != Color.white)
                 {
-                    EasyModeImage.color = Color.white;
+                    EasyModeSprite.color = Color.white;
                 }
-                if (MediumModeImage.color != Color.white)
+                if (MediumModeSprite.color != Color.white)
                 {
-                    MediumModeImage.color = Color.white;
+                    MediumModeSprite.color = Color.white;
                 }
-                if (HardModeImage.color != Color.black)
+                if (HardModeSprite.color != Color.black)
                 {
-                    HardModeImage.color = Color.black;
+                    HardModeSprite.color = Color.black;
                 }
                 break;
         }
     }
     public void displayObjectives() {
         if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective1) {
-            if (Objective1Image.color != Color.yellow) {
-                Objective1Image.color = Color.yellow;
+            if (Objective1Sprite.color != Color.yellow) {
+                Objective1Sprite.color = Color.yellow;
             }
         }
         else
         {
-            if (Objective1Image.color != Color.white)
+            if (Objective1Sprite.color != Color.white)
             {
-                Objective1Image.color = Color.white;
+                Objective1Sprite.color = Color.white;
             }
         }
         if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective2)
         {
-            if (Objective2Image.color != Color.yellow)
+            if (Objective2Sprite.color != Color.yellow)
             {
-                Objective2Image.color = Color.yellow;
+                Objective2Sprite.color = Color.yellow;
             }
         }
         else
         {
-            if (Objective2Image.color != Color.white)
+            if (Objective2Sprite.color != Color.white)
             {
-                Objective2Image.color = Color.white;
+                Objective2Sprite.color = Color.white;
             }
         }
         if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective3)
         {
-            if (Objective3Image.color != Color.yellow)
+            if (Objective3Sprite.color != Color.yellow)
             {
-                Objective3Image.color = Color.yellow;
+                Objective3Sprite.color = Color.yellow;
             }
         }
         else
         {
-            if (Objective3Image.color != Color.white)
+            if (Objective3Sprite.color != Color.white)
             {
-                Objective3Image.color = Color.white;
+                Objective3Sprite.color = Color.white;
             }
         }
     }
@@ -499,196 +459,8 @@ public class UIManager : MonoBehaviour {
         SongSelectionUI.SetActive(true);
     }
 
-    public void startLevel() { // start gameManager and read midi
+    public void startLevel() {
         SceneManager.LoadScene("Gameplay");
-        // retrieve scripts
-        _gameplayManager = GameObject.Find("Game Manager").GetComponent<gameplayManager>();
-        _playerHandler = GameObject.Find("Player").GetComponent<playerHandler>();
-        _midiParser = GameObject.Find("Game Manager").GetComponent<MidiParser>();
-
-        // pass data to scripts
-        _gameplayManager.CurrentLevelDifficulty = _dataManager.CurrentLevelDifficulty;
-        _gameplayManager.MidiFilePath = _dataManager.SongLibrary[_dataManager.SongIndex].MidiFilePath;
-    }
-
-    // Interactions within Pause
-    public void pauseMenuOpen() { 
-        // change _gameStarted from gameManager to false - stop deltatime from incrementing, stop player control, enemy control, note index increment
-        // switch timescale to 0 to stop physics
-        PauseUI.SetActive(true);
-    }
-
-    public void pauseMenuResumeButtonPressed() { 
-        PauseUI.SetActive(false);
-        _gameplayManager.ResumeGame();
-    }
-
-    public void pauseMenuRetryButtonPressed() {
-        startLevel();
-        PauseUI.SetActive(false);
-    }
-
-    public void quitButtonPressed() {
-        SceneManager.LoadScene("Hub");
-        DifficultySelectionUI.SetActive(true);
-        displaySelectedSongContainer();
-        displayObjectives();
-        switch (_dataManager.CurrentLevelDifficulty)
-        {
-            case "Easy":
-                easyModeSelected();
-                break;
-            case "Medium":
-                mediumModeSelected();
-                break;
-            case "Hard":
-                hardModeSelected();
-                break;
-        }
-    }
-    public void pauseMenuToDifficultySelection() {
-        PauseUI.SetActive(false);
-        quitButtonPressed();
-    }
-    // Interactions within StageFailed
-    public void stageFailedMenuOpen() { 
-        StageFailedUI.SetActive(true);
-    }
-
-    public void stageFailedRetryButtonPressed() {
-        StageFailedUI.SetActive(false);
-        startLevel();
-    }
-    
-    public void stageFailedToDifficultySelection() {
-        StageFailedUI.SetActive(false);
-        quitButtonPressed();
-    }
-
-
-    // Interactions within stageCleared
-    public void stageClearedMenuOpen() {
-        // display performance stats
-        // switch songImage sprite to a sprite stating the performance rank based on accuracy. Sprites are placed in graphics folder
-        StageClearedSongName.text = _dataManager.SongLibrary[_dataManager.SongIndex].SongName;
-        StageClearedArtistName.text = _dataManager.SongLibrary[_dataManager.SongIndex].ArtistName;
-        if (_gameplayManager.Accuracy == 100f)
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankSS;
-        }
-        else if (_gameplayManager.Accuracy >= 90f)
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankS;
-        } else if (_gameplayManager.Accuracy >= 80f)
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankA;
-        }
-        else if (_gameplayManager.Accuracy >= 70f)
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankB;
-        }
-        else if (_gameplayManager.Accuracy >= 60f)
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankC;
-        }
-        else
-        {
-            StageClearedPerformanceRankImage.sprite = performanceRankSpriteStorage[0].rankD;
-        }
-        Accuracy.text = _gameplayManager.Accuracy.ToString("F2") + " %";
-        Score.text = _gameplayManager.TotalScore.ToString();
-        Combo.text = _gameplayManager.HighestCombo.ToString();
-        PerfectCount.text = _gameplayManager.PerfectCount.ToString();
-        GreatCount.text = _gameplayManager.GreatCount.ToString();
-        GoodCount.text = _gameplayManager.GoodCount.ToString();
-        OkayCount.text = _gameplayManager.OkayCount.ToString();
-        MissCount.text = _gameplayManager.MissCount.ToString();
-
-        // display objectives
-        if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective1)
-        {
-            if (StageClearedObjective1Image.color != Color.yellow)
-            {
-                StageClearedObjective1Image.color = Color.yellow;
-            }
-        }
-        else
-        {
-            if (StageClearedObjective1Image.color != Color.white)
-            {
-                StageClearedObjective1Image.color = Color.white;
-            }
-        }
-        if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective2)
-        {
-            if (StageClearedObjective2Image.color != Color.yellow)
-            {
-                StageClearedObjective2Image.color = Color.yellow;
-            }
-        }
-        else
-        {
-            if (StageClearedObjective2Image.color != Color.white)
-            {
-                StageClearedObjective2Image.color = Color.white;
-            }
-        }
-        if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective3)
-        {
-            if (StageClearedObjective3Image.color != Color.yellow)
-            {
-                StageClearedObjective3Image.color = Color.yellow;
-            }
-        }
-        else
-        {
-            if (StageClearedObjective3Image.color != Color.white)
-            {
-                StageClearedObjective3Image.color = Color.white;
-            }
-        }
-
-        StageClearedUI.SetActive(true);
-    }
-
-    public void stageClearedRetryButtonPressed()
-    {
-        StageClearedUI.SetActive(false);
-        startLevel();
-    }
-
-    public void stageClearedToDifficultySelection() {
-        StageClearedUI.SetActive(false);
-        quitButtonPressed();
-    }
-
-    // in-game HUDs
-    public void hpBarUpdate() { // health, fever, track's progress
-        HPBar.value = _playerHandler.Hp;
-    }
-
-    public void feverBarUpdate() { 
-        FeverBar.value = _gameplayManager.FeverProgress;
-    }
-
-    public void progressBarUpdate() { 
-        ProgressBar.value = _gameplayManager.Timer / _gameplayManager.TrackDuration * 100;
-    }
-
-    public void scoreDisplayUpdate() { 
-        ScoreDisplay.text = _gameplayManager.TotalScore.ToString();
-    }
-
-    public void comboDisplayUpdate() {
-        ComboDisplay.text = "x" + _gameplayManager.ComboCounter.ToString();
-    }
-
-    public void multiplierDisplayUpdate() { 
-        MultiplierDisplay.text = "Multiplier: x" + _gameplayManager.ScoreMultiplier.ToString();
-    }
-
-    public void accuracyDisplayUpdate() { 
-        AccuracyDisplay.text = "Accuracy: " + _gameplayManager.Accuracy.ToString("F2") + " %";
     }
 
     // Interactions within settingsUI

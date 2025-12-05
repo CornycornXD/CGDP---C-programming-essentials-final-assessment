@@ -17,13 +17,14 @@ public class gameplayManager : MonoBehaviour
     EnemyBehaviour _enemyBehaviour;
     MidiParser _midiParser;
     dataManager _dataManager;
-    UIManager _uiManager;
+    gameplayUIManager _gameplayUIManager;
     int _totalScore, _comboCounter, _currentTotalBeatToDodge, _noteIndex, _totalNotes, _highestCombo, _perfectCount, _greatCount, _goodCount, _okayCount, _missCount;
     float _timer, _noteInputOffset, _noteStartTime, _trackDuration, _feverProgress, _feverDuration, _feverRemainingDuration, _totalAccuracy, _noteAccuracy, _scoreToAdd, _comboMultiplier, _feverMultiplier, _scoreMultiplier;
     string _currentLevelDifficulty, _midiFilePath;
     bool _gameStarted, _feverModeActive, _loadNextNode;
-    
-    public MidiParser MidiParser {
+
+    public MidiParser MidiParser
+    {
         get { return _midiParser; }
     }
     public int TotalScore
@@ -46,7 +47,8 @@ public class gameplayManager : MonoBehaviour
         get { return _timer; }
         set { _timer = value; }
     }
-    public float TrackDuration { 
+    public float TrackDuration
+    {
         get { return _trackDuration; }
         set { _trackDuration = value; }
     }
@@ -111,7 +113,8 @@ public class gameplayManager : MonoBehaviour
         get { return _scoreToAdd; }
         set { _scoreToAdd = value; }
     }
-    public float ScoreMultiplier     {
+    public float ScoreMultiplier
+    {
         get { return _scoreMultiplier; }
         set { _scoreMultiplier = value; }
     }
@@ -146,10 +149,13 @@ public class gameplayManager : MonoBehaviour
         _playerHandler = GameObject.Find("Player").GetComponent<playerHandler>();
         _midiParser = GameObject.Find("Game Manager").GetComponent<MidiParser>();
         _dataManager = GameObject.Find("Data Manager").GetComponent<dataManager>();
-        _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
+        _gameplayUIManager = GameObject.Find("Gameplay UI Manager").GetComponent<gameplayUIManager>();
     }
     void Start()
-    {
+
+    { // load MIDI notes list data from the specified MIDI file path
+        _midiParser.ReadMidi(_midiFilePath);
+
         // Initialise variables
         _timer = 0f;
         _totalScore = 0;
@@ -160,7 +166,8 @@ public class gameplayManager : MonoBehaviour
         _feverModeActive = false;
         _gameStarted = false;
         _totalNotes = _midiParser.MidiNotes.Count;
-        _trackDuration =  _midiParser.MidiNotes[_totalNotes - 1].StartTime + _midiParser.MidiNotes[_totalNotes - 1].Duration;
+        _trackDuration = _midiParser.MidiNotes[_totalNotes - 1].StartTime + _midiParser.MidiNotes[_totalNotes - 1].Duration;
+        Debug.Log("Total ndoes: " + _totalNotes + " | " + "Start Time: " + _midiParser.MidiNotes[_totalNotes - 1].StartTime + " | Last Note Duration: " + _midiParser.MidiNotes[_totalNotes - 1].Duration + " | track duration: " + _trackDuration);
         _noteIndex = 0;
         _loadNextNode = true;
         _highestCombo = 0;
@@ -170,17 +177,20 @@ public class gameplayManager : MonoBehaviour
         _okayCount = 0;
         _missCount = 0;
 
+        // Load data from dataManager
+        _currentLevelDifficulty = _dataManager.CurrentLevelDifficulty;
+        _midiFilePath = _dataManager.SongLibrary[_dataManager.SongIndex].MidiFilePath;
+
         // Start prelevel countdown
         StartCoroutine(prelevel());
 
-        // load MIDI notes list data from the specified MIDI file path
-        _midiParser.ReadMidi(_midiFilePath);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (_gameStarted) {
+        if (_gameStarted)
+        {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 PauseGame();
@@ -204,11 +214,13 @@ public class gameplayManager : MonoBehaviour
                         _enemyBehaviour.Attacking = true;
                         _currentTotalBeatToDodge++;
                     }
-                    else {
+                    else
+                    {
                         _enemyBehaviour.Dashing = true;
                     }
                 }
-                if (_loadNextNode == false && _timer - _midiParser.MidiNotes[_noteIndex].StartTime > 0.070f) {
+                if (_loadNextNode == false && _timer - _midiParser.MidiNotes[_noteIndex].StartTime > 0.070f)
+                {
                     if (_noteIndex < _totalNotes - 1)
                     {
                         _noteIndex++;
@@ -216,7 +228,8 @@ public class gameplayManager : MonoBehaviour
                         {
                             _enemyBehaviour.Attacking = false;
                         }
-                        else { 
+                        else
+                        {
                             _enemyBehaviour.Dashing = false;
                         }
                         _loadNextNode = true;
@@ -343,7 +356,8 @@ public class gameplayManager : MonoBehaviour
                                     _okayCount++;
                                 }
                                 _comboCounter++;
-                                if (_comboCounter > _highestCombo) { 
+                                if (_comboCounter > _highestCombo)
+                                {
                                     _highestCombo = _comboCounter;
                                 }
                                 if (!(_comboCounter < 10))
@@ -369,7 +383,8 @@ public class gameplayManager : MonoBehaviour
                                         _comboMultiplier = 2f;
                                     }
                                 }
-                                else { 
+                                else
+                                {
                                     _comboMultiplier = 1f;
                                 }
                                 if (_feverProgress >= 100f)
@@ -380,14 +395,18 @@ public class gameplayManager : MonoBehaviour
                                 {
                                     _feverMultiplier = 2f;
                                 }
-                                if (_playerHandler.Hp < 100) {
+                                if (_playerHandler.Hp < 100)
+                                {
                                     _playerHandler.Hp += 1;
-                                    if (_playerHandler.Hp > 100) { 
+                                    if (_playerHandler.Hp > 100)
+                                    {
                                         _playerHandler.Hp = 100;
                                     }
                                 }
                             }
-                        } else {
+                        }
+                        else
+                        {
                             // Missed note - late
                             Debug.Log("Miss"); // replace with UI feedback later
                             _noteAccuracy = 0f;
@@ -419,14 +438,18 @@ public class gameplayManager : MonoBehaviour
                     }
                 }
             }
-            else {
-                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective1 != true) { 
+            else
+            {
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective1 != true)
+                {
                     _dataManager.SongLibrary[_dataManager.SongIndex].Objective1 = true;
                 }
-                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective2 != true && _totalAccuracy >= 75f && _currentLevelDifficulty == "Medium") { 
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective2 != true && _totalAccuracy >= 75f && _currentLevelDifficulty == "Medium")
+                {
                     _dataManager.SongLibrary[_dataManager.SongIndex].Objective2 = true;
                 }
-                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective3 != true && _playerHandler.NoDamageReceived == true && _currentLevelDifficulty == "Hard") { 
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective3 != true && _playerHandler.NoDamageReceived == true && _currentLevelDifficulty == "Hard")
+                {
                     _dataManager.SongLibrary[_dataManager.SongIndex].Objective3 = true;
                 }
                 StageComplete();
@@ -436,35 +459,40 @@ public class gameplayManager : MonoBehaviour
 
     }
 
-    IEnumerator prelevel() { 
+    IEnumerator prelevel()
+    {
         yield return new WaitForSeconds(3f);
         _gameStarted = true;
     }
 
 
-    public void StageFailed() {
+    public void StageFailed()
+    {
         _gameStarted = false;
         Time.timeScale = 0f;
         Debug.Log("Stage Failed");
-        _uiManager.stageFailedMenuOpen();
+        _gameplayUIManager.stageFailedMenuOpen();
     }
 
-    public void StageComplete() {
+    public void StageComplete()
+    {
         _gameStarted = false;
         Time.timeScale = 0f;
         Debug.Log("Stage Completed");
-        _uiManager.stageClearedMenuOpen();
+        _gameplayUIManager.stageClearedMenuOpen();
     }
 
-    public void PauseGame() {
-        _gameStarted = false; 
+    public void PauseGame()
+    {
+        _gameStarted = false;
         Debug.Log("Game Paused");
-        _uiManager.pauseMenuOpen();
+        _gameplayUIManager.pauseMenuOpen();
         Time.timeScale = 0f;
 
     }
 
-    public void ResumeGame() {
+    public void ResumeGame()
+    {
         _gameStarted = true;
         Debug.Log("Game Unpaused");
         Time.timeScale = 1f;

@@ -47,15 +47,17 @@ public class EnemyBehaviour : MonoBehaviour
     void Awake()
     {
         // Get components/scripts
-        _gameplayManager = GameObject.Find("Gameplay Manager").GetComponent<gameplayManager>();
+        _gameplayManager = GameObject.Find("Game Manager").GetComponent<gameplayManager>();
         _player = GameObject.Find("Player").GetComponent<playerHandler>();
         _attackHitBoxes = new GameObject[] {transform.Find("Left").gameObject, transform.Find("Right").gameObject, transform.Find("Front").gameObject};
         _playerRangeCircle1Collider = GameObject.Find("Player Range (1)").GetComponent<CircleCollider2D>();
         _playerRangeCircle2Collider = GameObject.Find("Player Range (2)").GetComponent<CircleCollider2D>();
+        _rb = gameObject.GetComponent<Rigidbody2D>();
     }
 
     void Start()
     {
+        
         _rb.GetComponent<Rigidbody2D>().gravityScale = 0f;
         _attacking = false;
         _dashing = false;

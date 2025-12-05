@@ -3,6 +3,7 @@ using System.Collections;
 using TMPro.SpriteAssetUtilities;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class playerHandler : MonoBehaviour
 {
@@ -67,7 +68,8 @@ public class playerHandler : MonoBehaviour
         _rb.gravityScale = 0f;
         // safezone
         _safeZoneBounds = GameObject.Find("Safezone").GetComponent<BoxCollider2D>().bounds;
-
+        // gameplayManager
+        _gameplayManager = GameObject.Find("Game Manager").GetComponent<gameplayManager>();
     }
 
     void Start()
@@ -126,7 +128,7 @@ public class playerHandler : MonoBehaviour
                 wasdMovement();
             }
             playerRotation();
-            if (_safeZoneBounds.Contains(transform.position))
+            if (transform.position.x >= _safeZoneBounds.min.x && transform.position.x <= _safeZoneBounds.max.x && transform.position.y >= _safeZoneBounds.min.y && transform.position.y <= _safeZoneBounds.max.y)
             {
                 if (_hpRecoverFlag)
                 {
