@@ -13,7 +13,7 @@ public class EnemyBehaviour : MonoBehaviour
      * 6. enemy attack state switches off for some part of the songs --> chase and dash instead of attacking ( this can be done either through reading a file attached with midi path upon selecting a song or alternate between 2 modes after every 20 seconds)
      * 7. play attack animation when in attack state and at 0.60s before note start time and end animation at after 0.60 s of note start time
      * 8. for prototype, enemy will not have attack animation, but instead it will have a cube shaped attack hitbox that appears during attacking state that will change colorrs upon timing thresholds -  done
-     * 9. whenever enemy switch state - spawn a cube behind the enemy with a specific colour
+     * 9. whenever enemy switch state - spawn a cube behind the enemy with a specific colour (prefab)
      * 
     */
     // Private variables
@@ -56,6 +56,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     void Start()
     {
+        _rb.GetComponent<Rigidbody2D>().gravityScale = 0f;
         _attacking = false;
         _dashing = false;
         _actionPatternAttacking = true;
@@ -69,9 +70,10 @@ public class EnemyBehaviour : MonoBehaviour
     void Update()
     {
 
-        _timeAfterCurrentNote = _gameplayManager.Timer - _gameplayManager.MidiParser.MidiNotes[_gameplayManager.NoteIndex].StartTime;
+
         if (_gameplayManager.GameStarted)
         {
+            _timeAfterCurrentNote = _gameplayManager.Timer - _gameplayManager.MidiParser.MidiNotes[_gameplayManager.NoteIndex].StartTime;
             if (_switchActionPatternFlag) {
                 StartCoroutine(switchActionPattern());
             }
@@ -190,8 +192,11 @@ public class EnemyBehaviour : MonoBehaviour
         }
     }
 
-    IEnumerator switchActionPattern() { // fix later: instantiate/set active child cube and change color to green on dash and red on attack
-
+    IEnumerator switchActionPattern() {
+        /* fix later: 
+         * instantiate/set active child cube and change color to green on dash and red on attack\
+         * easy (current code), medium: (5s dashing - 10s attacking), hard: (5s dashing - 20s attacking) 
+        */
         _switchActionPatternFlag = false;
         yield return new WaitForSeconds(10f);
         if (!(_timeAfterCurrentNote > 0.060f))

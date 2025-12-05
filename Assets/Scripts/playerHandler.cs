@@ -9,10 +9,10 @@ public class playerHandler : MonoBehaviour
     //  Remaining shits to do for this script:
     /*  1. enemy hit detection --> damage processing - done
      *  2. reads dodge timing (using 2 child game objs) and MIDI sync --> scoring (game manager) - done
-     *  3. 1 and 2 are linked for guaranteed hit if missed dodge timing - done
-     *  4. state wrong direction of dodge even when input's timing is correct
-     *  5. HP restore mechanism (game manager)
-     *  6. Add boxes indicating accuracy thresholds for dodging (game manager) - this is inconsistent with the current design so will be skipped for now
+     *  3. 1 and 2 are linked for guaranteed hit if missed dodge timing - done -done
+     *  4. state wrong direction of dodge even when input's timing is correct - UI later pls
+     *  5. HP restore mechanism (game manager) - done
+     *  6. Add boxes indicating accuracy thresholds for dodging (game manager) - this is inconsistent with the current design so will be skipped for now - skip this sht mf
     */
 
     Rigidbody2D _rb;
@@ -21,7 +21,7 @@ public class playerHandler : MonoBehaviour
     Vector3 _mousePos;
     int _hp;
     float _playerSpeed, _evasionCooldown, _evasionDuration, _dodgeDistance;
-    bool _invulnerability, _controlLock, _canEvade, _dodging, _enemyCollided, _hpRecoverFlag, _hpDecayFlag;
+    bool _invulnerability, _controlLock, _canEvade, _dodging, _enemyCollided, _hpRecoverFlag, _hpDecayFlag, _noDamageReceived;
  
     public Vector3 MousePos { 
         get { return _mousePos; }
@@ -54,6 +54,12 @@ public class playerHandler : MonoBehaviour
         get { return _enemyCollided; }
         set { _enemyCollided = value; }
     }
+
+    public bool NoDamageReceived
+    {
+        get { return _noDamageReceived; }
+        set { _noDamageReceived = value; }
+    }
     private void Awake()
     {
         // rb
@@ -80,57 +86,66 @@ public class playerHandler : MonoBehaviour
         _enemyCollided = false;
         _hpRecoverFlag = true;
         _hpDecayFlag = true;
+        _noDamageReceived = true;
     }
     void Update()
     {
         // Disable player controls when game is paused, failed, or completed - fix later
         // non-physics methods
-        if (!_controlLock) {
-            if ((Input.GetKeyDown("Q") && Input.GetKeyDown("E")))
+        if (_gameplayManager.GameStarted) {
+            if (!_controlLock)
             {
-                Dodge("backward");
+                if ((Input.GetKeyDown(KeyCode.Q) && Input.GetKeyDown(KeyCode.E)))
+                {
+                    Dodge("backward");
+                }
+                else if (Input.GetKeyDown(KeyCode.Q))
+                {
+                    Dodge("left");
+                }
+                else if (Input.GetKeyDown(KeyCode.E))
+                {
+                    Dodge("right");
+                }
             }
-            else if (Input.GetKeyDown("Q"))
+            if (_canEvade == true)
             {
-                Dodge("left");
-            }
-            else if (Input.GetKeyDown("E"))
-            {
-                Dodge("right");
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    Evade();
+                }
             }
         }
-        if (_canEvade == true) { 
-            if (Input.GetKeyDown("space"))
-            {
-                Evade();
-            }
-        }
-
     }
 
     void FixedUpdate() {
         // physics methods
-        if (!_dodging)
-        {
-            wasdMovement();
-        }
-        playerRotation();
-        if (_safeZoneBounds.Contains(transform.position))
-        {
-            if (_hpRecoverFlag) {
-                StartCoroutine(HpRecover());
+        if (_gameplayManager.GameStarted) {
+            if (!_dodging)
+            {
+                wasdMovement();
+            }
+            playerRotation();
+            if (_safeZoneBounds.Contains(transform.position))
+            {
+                if (_hpRecoverFlag)
+                {
+                    StartCoroutine(HpRecover());
+                }
+            }
+            else
+            {
+                if (_hpDecayFlag)
+                {
+                    StartCoroutine(HpDecay());
+                }
+            }
+            if (_hp <= 0)
+            {
+                _gameplayManager.StageFailed();
             }
         }
-        else
-        {
-            if (_hpDecayFlag) {
-                StartCoroutine(HpDecay());
-            }
-        }
-        if (_hp <= 0)
-        {
-            _gameplayManager.StageFailed();
-        }
+
     }
 
     void wasdMovement() {
@@ -224,9 +239,13 @@ public class playerHandler : MonoBehaviour
 
     IEnumerator HpRecover() {
         _hpRecoverFlag = false;
-        if (_hp < 100) { 
+        if (_hp < 100) {
+            _noDamageReceived = false;
             yield return new WaitForSeconds(0.5f);
             _hp += 1;
+            if (_hp > 100) { 
+                _hp = 100;
+            }
         }
         _hpRecoverFlag = true;
     }

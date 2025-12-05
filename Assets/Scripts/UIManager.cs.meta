@@ -1,2 +1,96 @@
 fileFormatVersion: 2
 guid: 543a2ba1e7699b44499f6572829ab5b7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - MainMenuUI: {fileID: 5032461280715774855, guid: ce0d598bc0131a84c99e8d42020d65e2, type: 3}
+  - SongSelectionUI: {fileID: 5882053778606498123, guid: 956a90a4428e20c46a258ca99ae8f4bb, type: 3}
+  - DifficultySelectionUI: {fileID: 2445255511118934923, guid: 0cd0eb5e1eaaad14bbfd4c313473980c, type: 3}
+  - SettingsUI: {fileID: 6549451650534146577, guid: f4be23944aa2d5640ba08bf17c852833, type: 3}
+  - StageFailedUI: {fileID: 498968952445987692, guid: 99f1f492ab036174f801159f6b9093b9, type: 3}
+  - StageClearedUI: {fileID: 2459689713370171001, guid: a9dad4432cd230c4b86cf5c6aac4cde2, type: 3}
+  - PauseUI: {fileID: 8449955316433504915, guid: e9428493f095c424da330cfee359dd40, type: 3}
+  - InGameHUD: {fileID: 55874523561781278, guid: 127d001d324605241ba91346b1ce3a55, type: 3}
+  - MainMenuToSongSelectionButton: {fileID: 2554725979703666023, guid: 17a924f7e0562074aa1e5baf9b021da4, type: 3}
+  - SetingsButton: {fileID: 2073298929516948179, guid: f14f432bed908494ca3d61b538b9d907, type: 3}
+  - ExitButton: {fileID: 1000591275561145203, guid: a974838ed6d512445a3fb22dbbd41313, type: 3}
+  - SongContainer1: {fileID: 2936640014092489001, guid: f8de093ff34ee424a862d367a8b59fa9, type: 3}
+  - SongContainer2: {fileID: 3063692244610276166, guid: e42f13879326e0441a6bea0a6363a1c6, type: 3}
+  - SongContainer3: {fileID: 1212319504301735304, guid: e1ff028b8dc17d744a6b58fa71da05ea, type: 3}
+  - LockedLayerContainer1: {fileID: 5557877561395509352, guid: 709e097f2de8bd843bb6a2f7b4af3825, type: 3}
+  - LockedLayerContainer2: {fileID: 8971815517601100314, guid: 93e77c53747959e4c86dec64a5d52e01, type: 3}
+  - LockedLayerContainer3: {fileID: 5905795182865761917, guid: faecb40967e6e4548898a822e2fb5767, type: 3}
+  - ErrorMessage: {fileID: 6217000336344644637, guid: a250fa2fb629c5f4d8ae1c641bc26736, type: 3}
+  - Image1: {fileID: 4427000917061423906, guid: 841e1ceaced5fd14491b3c19457a8430, type: 3}
+  - Image2: {fileID: 112798933402943844, guid: c29ebead9dd4f4b48aacf7617098009e, type: 3}
+  - Image3: {fileID: 8452528204049183579, guid: 81bdd15d0590db74ba3c4d0c737e8282, type: 3}
+  - TotalStars: {fileID: 5002654955485213162, guid: c1cf3155414d02a4b92c9f9e9d35a5e6, type: 3}
+  - SongLibraryProgressBarValue: {fileID: 4060482203063754674, guid: 2cc8061ca8bf4004385c3938cc779c0d, type: 3}
+  - SongName1: {fileID: 6017315583266650195, guid: c193300aec2841f45a436301b4d85875, type: 3}
+  - ArtistName1: {fileID: 5537001569624031183, guid: 0af31fa656994c74ea21158a9af78eec, type: 3}
+  - Year1: {fileID: 3072652310887317390, guid: aa963d47d19894b47b3100c669f5cadc, type: 3}
+  - Duration1: {fileID: 1601355766378101023, guid: a59a8c57df6445a45b108f0023cfd9df, type: 3}
+  - SongName2: {fileID: 4454213297218796533, guid: 0059c171ce28f954b8f8fc75175f5976, type: 3}
+  - ArtistName2: {fileID: 2630266657944438358, guid: 1e2c26cd741d70747aa2a485a3b88978, type: 3}
+  - Year2: {fileID: 7789859281640596125, guid: 9c821af5883cb5f41825e4d35b40d4cd, type: 3}
+  - Duration2: {fileID: 4994303538939395287, guid: aff8eeb4acea3644a98e1bf7bf25eb36, type: 3}
+  - SongName3: {fileID: 4879407411554768734, guid: feba716c466c4984e90774cf8913d008, type: 3}
+  - ArtistName3: {fileID: 2575001993486382380, guid: 463115db05d0c4246a10416fc2705a8c, type: 3}
+  - Year3: {fileID: 7014677889008997325, guid: 257486d833c7c80429887a020485def7, type: 3}
+  - Duration3: {fileID: 3364534367250877742, guid: 1560c54c1255f37419f458cce6a8282f, type: 3}
+  - SongLibraryProgressBar: {fileID: 1038623397372460085, guid: 75372d8546c6373479d2d9fa609cc1b7, type: 3}
+  - NextSongButton: {fileID: 674382097609137372, guid: a45bc89ab1d571e43b4ca74f52bc1d1a, type: 3}
+  - PreviousSongButton: {fileID: 6853001444748262824, guid: 2a1fc86be869bbb418d1a677df4b91e3, type: 3}
+  - SelectSongButton: {fileID: 8034024021905747167, guid: 8614f96b61cb1c943ba99094dcf50354, type: 3}
+  - SongSelectionToMainMenuButton: {fileID: 7841053081438502906, guid: d393744caab1e1d479493e3e50c7e6ee, type: 3}
+  - SelectedSongImage: {fileID: 755946680161273576, guid: 046ebe8dfbc011241a2d795e39e886f9, type: 3}
+  - EasyModeImage: {fileID: 7692905709375110803, guid: a309bd7ad2cfa2548bee5c97fe9e2baf, type: 3}
+  - MediumModeImage: {fileID: 4582649568332834272, guid: 4acb049f34b3d8545bbc766cfab7be26, type: 3}
+  - HardModeImage: {fileID: 4782817233178054477, guid: 26e3f304a31b2164c996acdc66aaf8e8, type: 3}
+  - Objective1Image: {fileID: 6866496678356296993, guid: 693eb80eb4e6e5545b605ab7f3383cbf, type: 3}
+  - Objective2Image: {fileID: 7099796132317998602, guid: fc310abd83814534bba8b0edbf7fdea8, type: 3}
+  - Objective3Image: {fileID: 8063924678819562548, guid: ece251b2ccca6654a942df9a6a2b63a3, type: 3}
+  - SelectedSongName: {fileID: 3060762745412744998, guid: 5d4acdb7019ad1e4c9c120668c1a64fb, type: 3}
+  - SelectedSongArtist: {fileID: 2471542879706209708, guid: 2595aa13227775c4f8d05e2b9f917481, type: 3}
+  - SelectedSongYear: {fileID: 8990295119331950624, guid: c7d99d08247032045b4c8a5ef3a1ec04, type: 3}
+  - SelectedSongDuration: {fileID: 8361174675055317553, guid: b9469190add4e2e4d956d85d6bd7b2eb, type: 3}
+  - EasyModeButton: {fileID: 3544768540442918072, guid: 710a214fc1f7772439427085ac16b53a, type: 3}
+  - MediumModeButton: {fileID: 8087063678106915461, guid: 99a05d677c56d8c49b4b552e8af62256, type: 3}
+  - HardModeButton: {fileID: 999276795706483028, guid: c1ba1d5d2e5d2a44a85f473a889956cc, type: 3}
+  - PlayButton: {fileID: 9150175724221469925, guid: 14e168fe38b9f69498ce43b6a438995e, type: 3}
+  - DifficultySelectionToSongSelectionButton: {fileID: 8644980928598380474, guid: 796ad4e89c6f5f443b7900fb65f2d3d8, type: 3}
+  - PauseMenuResumeButton: {fileID: 7890612865795028512, guid: d7638f7ad4c873244b0e05a767d603c6, type: 3}
+  - PauseMenuRetryButton: {fileID: 7822364864303925795, guid: a39160187050be54ba3c6bcb35f2a386, type: 3}
+  - QuitButton: {fileID: 8469925432846729595, guid: 9616cee652401ca4faef9aa27e725cd7, type: 3}
+  - StageClearedSongName: {fileID: 1405120740210297689, guid: cb12ea83fe665cc4db832ab0b230b928, type: 3}
+  - StageClearedArtistName: {fileID: 209332614933689706, guid: 17865210d21fcef469eb9874df2d363e, type: 3}
+  - Accuracy: {fileID: 3892143761183882757, guid: 8a47d5ce9c7975040bd17960ae0e2ea0, type: 3}
+  - Score: {fileID: 1009659721011405580, guid: 0dfc1870662fcf84e9598a7846e4d352, type: 3}
+  - Combo: {fileID: 2590837870985134166, guid: 0a03867829ed18d41b6a1010b5d6c1bf, type: 3}
+  - PerfectCount: {fileID: 3139727874794931721, guid: ef1001a2f595ecb43b4340efe0144805, type: 3}
+  - GreatCount: {fileID: 1938577127495575278, guid: 85194dedfcc5ed84db06ebc4dcc45543, type: 3}
+  - GoodCount: {fileID: 3711568966903555503, guid: b5462d20c24826b479e424764b0cde00, type: 3}
+  - OkayCount: {fileID: 8029509007552520723, guid: c4a6bf98f1c70c847b4d163dd41a2165, type: 3}
+  - MissCount: {fileID: 6005745548980502916, guid: b607fb50fc8e81440b87daa5be408422, type: 3}
+  - StageClearedPerformanceRankImage: {fileID: 6775431819604427590, guid: 10a4352dce7183f488e8d607a1bbdbfe, type: 3}
+  - StageClearedObjective1Image: {fileID: 6084704605801845100, guid: 06e605d5876ee094e87ad63b3be1e123, type: 3}
+  - StageClearedObjective2Image: {fileID: 4022196428320756501, guid: 52edea91c965b1e4b8201034cc8e4057, type: 3}
+  - StageClearedObjective3Image: {fileID: 3529414068219436798, guid: 2c959dba03e04624d8d260a215c17898, type: 3}
+  - StageClearedRetryButton: {fileID: 8452617574776777202, guid: 0b71b38685b5c1a48b38729bccd145ca, type: 3}
+  - StageClearedToDifficultySelectionButton: {fileID: 781689945764127456, guid: 034d00049687ece4a8f1770e97864ea1, type: 3}
+  - StageFailedRetryButton: {fileID: 2896870304096076697, guid: 036d527beba7d6c4eba478f6e0a94f53, type: 3}
+  - StageFailedToDifficultySelectionButton: {fileID: 7844068076688542823, guid: 7ad5966c7eb47af48a495b497d685777, type: 3}
+  - HPBar: {fileID: 8365755264244526587, guid: e1062e0d271dd0c44b7b462daed4fd92, type: 3}
+  - FeverBar: {fileID: 446875985333740834, guid: 26527d7c35dcf5e4882f069cd47c4214, type: 3}
+  - ProgressBar: {fileID: 6712365171713066440, guid: 39d698a077b494343bbc58e17bc87c47, type: 3}
+  - ScoreDisplay: {fileID: 6842801214553090999, guid: 1a6d13cadaf660545b3516dd9fbdbbc0, type: 3}
+  - ComboDisplay: {fileID: 4844090926757786722, guid: 8a38161df8edfaa458abff03640d2dd8, type: 3}
+  - MultiplierDisplay: {fileID: 3479890486905929152, guid: ae360ecf73cb72347ae2b245bf635e41, type: 3}
+  - AccuracyDisplay: {fileID: 4938636439866537874, guid: cd3ca84111900ee468161b9d3fb5fbb0, type: 3}
+  - VolumeSlider: {fileID: 8250636607913791510, guid: 0b3984203503e5640801ffa533e8f76b, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

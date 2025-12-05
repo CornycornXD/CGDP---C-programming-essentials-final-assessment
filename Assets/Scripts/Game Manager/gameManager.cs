@@ -7,18 +7,20 @@ public class gameplayManager : MonoBehaviour
     /* 1. Track score - only add score when enemy is attacking, combo counter - done
      * 2. Manage fever mode (progress, duration) - done
      * 3. Handle game state (start, pause, end) - done
-     * 4. Interface with other scripts (playerHandler, enemyBehaviour, UIManager)
-     * 5. Read MIDI sync data to align game events with music
-     * 6. Decrease player HP when outside of the area eclosed by the barriers per second
-     * 7. Restore player HP when inside the area enclosed by the barriers per second and correct input timing
+     * 4. Interface with other scripts (playerHandler, enemyBehaviour, UIManager) -done
+     * 5. Read MIDI sync data to align game events with music -done
+     * 6. Decrease player HP when outside of the area eclosed by the barriers per second - done
+     * 7. Restore player HP when inside the area enclosed by the barriers per second and correct input timing -done
     
     */
     playerHandler _playerHandler;
     EnemyBehaviour _enemyBehaviour;
     MidiParser _midiParser;
-    int _totalScore, _comboCounter, _currentTotalBeatToDodge, _noteIndex, _totalNotes;
-    float _timer, _timeLeft, _noteInputOffset, _noteStartTime, _trackDuration, _feverProgress, _feverDuration, _feverRemainingDuration, _totalAccuracy, _noteAccuracy, _scoreToAdd;
-    string _currentLevelDifficulty;
+    dataManager _dataManager;
+    UIManager _uiManager;
+    int _totalScore, _comboCounter, _currentTotalBeatToDodge, _noteIndex, _totalNotes, _highestCombo, _perfectCount, _greatCount, _goodCount, _okayCount, _missCount;
+    float _timer, _noteInputOffset, _noteStartTime, _trackDuration, _feverProgress, _feverDuration, _feverRemainingDuration, _totalAccuracy, _noteAccuracy, _scoreToAdd, _comboMultiplier, _feverMultiplier, _scoreMultiplier;
+    string _currentLevelDifficulty, _midiFilePath;
     bool _gameStarted, _feverModeActive, _loadNextNode;
     
     public MidiParser MidiParser {
@@ -44,6 +46,41 @@ public class gameplayManager : MonoBehaviour
         get { return _timer; }
         set { _timer = value; }
     }
+    public float TrackDuration { 
+        get { return _trackDuration; }
+        set { _trackDuration = value; }
+    }
+    public int HighestCombo
+    {
+        get { return _highestCombo; }
+        set { _highestCombo = value; }
+    }
+    public int PerfectCount
+    {
+        get { return _perfectCount; }
+        set { _perfectCount = value; }
+    }
+    public int GreatCount
+    {
+        get { return _greatCount; }
+        set { _greatCount = value; }
+    }
+    public int GoodCount
+    {
+        get { return _goodCount; }
+        set { _goodCount = value; }
+    }
+    public int OkayCount
+    {
+        get { return _okayCount; }
+        set { _okayCount = value; }
+    }
+    public int MissCount
+    {
+        get { return _missCount; }
+        set { _missCount = value; }
+    }
+
     public float NoteInputOffset
     {
         get { return _noteInputOffset; }
@@ -74,11 +111,21 @@ public class gameplayManager : MonoBehaviour
         get { return _scoreToAdd; }
         set { _scoreToAdd = value; }
     }
+    public float ScoreMultiplier     {
+        get { return _scoreMultiplier; }
+        set { _scoreMultiplier = value; }
+    }
 
     public string CurrentLevelDifficulty
     {
         get { return _currentLevelDifficulty; }
         set { _currentLevelDifficulty = value; }
+    }
+
+    public string MidiFilePath
+    {
+        get { return _midiFilePath; }
+        set { _midiFilePath = value; }
     }
     public bool GameStarted
     {
@@ -98,6 +145,8 @@ public class gameplayManager : MonoBehaviour
         _enemyBehaviour = GameObject.Find("Enemy").GetComponent<EnemyBehaviour>();
         _playerHandler = GameObject.Find("Player").GetComponent<playerHandler>();
         _midiParser = GameObject.Find("Game Manager").GetComponent<MidiParser>();
+        _dataManager = GameObject.Find("Data Manager").GetComponent<dataManager>();
+        _uiManager = GameObject.Find("UI Manager").GetComponent<UIManager>();
     }
     void Start()
     {
@@ -114,19 +163,31 @@ public class gameplayManager : MonoBehaviour
         _trackDuration =  _midiParser.MidiNotes[_totalNotes - 1].StartTime + _midiParser.MidiNotes[_totalNotes - 1].Duration;
         _noteIndex = 0;
         _loadNextNode = true;
+        _highestCombo = 0;
+        _perfectCount = 0;
+        _greatCount = 0;
+        _goodCount = 0;
+        _okayCount = 0;
+        _missCount = 0;
 
         // Start prelevel countdown
         StartCoroutine(prelevel());
+
+        // load MIDI notes list data from the specified MIDI file path
+        _midiParser.ReadMidi(_midiFilePath);
     }
 
     // Update is called once per frame
     void Update()
     {
         if (_gameStarted) {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                PauseGame();
+            }
             if (_timer <= _trackDuration)
             {
                 _timer += Time.deltaTime;
-                _timeLeft = _trackDuration - _timer; // can be used for UI display later
                 // you need to read MIDI data to get the start time of each note first  - save them all to a list/array
                 // get current note data from the list/array based on the timer
                 // then assign _noteStartTime to the start time of the current note data
@@ -166,7 +227,7 @@ public class gameplayManager : MonoBehaviour
                     if (_enemyBehaviour.Attacking == true)
                     {
 
-                        if ((Input.GetKeyDown("Q") || Input.GetKeyDown("E") || (Input.GetKeyDown("Q") && Input.GetKeyDown("E"))) && _timer - _noteStartTime <= 0.060f)
+                        if ((Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.E) || (Input.GetKeyDown(KeyCode.Q) && Input.GetKeyDown(KeyCode.E))) && _timer - _noteStartTime <= 0.060f)
                         {
                             _scoreToAdd = 0f;
                             _noteInputOffset = _timer - _noteStartTime;
@@ -184,11 +245,7 @@ public class gameplayManager : MonoBehaviour
                                 {
                                     _feverProgress = 0f;
                                 }
-                                // during enemy attack phase, enemy will successfully hit player upon early missed note
-                                if (_noteInputOffset < -0.060)
-                                {
-                                    // this might belong to enemyBehaviour script instead
-                                }
+                                _missCount++;
                             }
                             else
                             {
@@ -214,6 +271,7 @@ public class gameplayManager : MonoBehaviour
                                                 break;
                                         }
                                     }
+                                    _perfectCount++;
                                 }
                                 else if (_noteInputOffset <= 0.040f || _noteInputOffset >= -0.040f)
                                 {
@@ -236,6 +294,7 @@ public class gameplayManager : MonoBehaviour
                                                 break;
                                         }
                                     }
+                                    _greatCount++;
                                 }
                                 else if (_noteInputOffset <= 0.050f || _noteInputOffset >= -0.050f)
                                 {
@@ -258,6 +317,7 @@ public class gameplayManager : MonoBehaviour
                                                 break;
                                         }
                                     }
+                                    _goodCount++;
                                 }
                                 else if (_noteInputOffset <= 0.060f || _noteInputOffset >= -0.060f)
                                 {
@@ -280,30 +340,37 @@ public class gameplayManager : MonoBehaviour
                                                 break;
                                         }
                                     }
+                                    _okayCount++;
                                 }
                                 _comboCounter++;
+                                if (_comboCounter > _highestCombo) { 
+                                    _highestCombo = _comboCounter;
+                                }
                                 if (!(_comboCounter < 10))
                                 {
                                     if (_comboCounter < 20)
                                     {
-                                        _scoreToAdd = _scoreToAdd * 1.2f;
+                                        _comboMultiplier = 1.2f;
                                     }
                                     else if (_comboCounter < 30)
                                     {
-                                        _scoreToAdd = _scoreToAdd * 1.4f;
+                                        _comboMultiplier = 1.4f;
                                     }
                                     else if (_comboCounter < 40)
                                     {
-                                        _scoreToAdd = _scoreToAdd * 1.6f;
+                                        _comboMultiplier = 1.6f;
                                     }
                                     else if (_comboCounter < 50)
                                     {
-                                        _scoreToAdd = _scoreToAdd * 1.8f;
+                                        _comboMultiplier = 1.8f;
                                     }
                                     else
                                     {
-                                        _scoreToAdd = _scoreToAdd * 2f;
+                                        _comboMultiplier = 2f;
                                     }
+                                }
+                                else { 
+                                    _comboMultiplier = 1f;
                                 }
                                 if (_feverProgress >= 100f)
                                 {
@@ -311,10 +378,13 @@ public class gameplayManager : MonoBehaviour
                                 }
                                 if (_feverModeActive)
                                 {
-                                    _scoreToAdd *= 2f;
+                                    _feverMultiplier = 2f;
                                 }
                                 if (_playerHandler.Hp < 100) {
                                     _playerHandler.Hp += 1;
+                                    if (_playerHandler.Hp > 100) { 
+                                        _playerHandler.Hp = 100;
+                                    }
                                 }
                             }
                         } else {
@@ -329,9 +399,12 @@ public class gameplayManager : MonoBehaviour
                             else
                             {
                                 _feverProgress = 0f;
+                                _feverMultiplier = 1f;
                             }
+                            _missCount++;
                         }
-                        _totalScore += (int)_scoreToAdd;
+                        _scoreMultiplier = _comboMultiplier * _feverMultiplier;
+                        _totalScore += (int)(_scoreToAdd * _scoreMultiplier);
                         _totalAccuracy = (_totalAccuracy * (_currentTotalBeatToDodge - 1) + _noteAccuracy) / _currentTotalBeatToDodge;
                     }
                 }
@@ -347,7 +420,16 @@ public class gameplayManager : MonoBehaviour
                 }
             }
             else {
-                StageCompleted();
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective1 != true) { 
+                    _dataManager.SongLibrary[_dataManager.SongIndex].Objective1 = true;
+                }
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective2 != true && _totalAccuracy >= 75f && _currentLevelDifficulty == "Medium") { 
+                    _dataManager.SongLibrary[_dataManager.SongIndex].Objective2 = true;
+                }
+                if (_dataManager.SongLibrary[_dataManager.SongIndex].Objective3 != true && _playerHandler.NoDamageReceived == true && _currentLevelDifficulty == "Hard") { 
+                    _dataManager.SongLibrary[_dataManager.SongIndex].Objective3 = true;
+                }
+                StageComplete();
             }
 
         }
@@ -362,23 +444,30 @@ public class gameplayManager : MonoBehaviour
 
     public void StageFailed() {
         _gameStarted = false;
+        Time.timeScale = 0f;
         Debug.Log("Stage Failed");
+        _uiManager.stageFailedMenuOpen();
     }
 
-    public void StageCompleted() {
+    public void StageComplete() {
         _gameStarted = false;
+        Time.timeScale = 0f;
         Debug.Log("Stage Completed");
+        _uiManager.stageClearedMenuOpen();
     }
 
-    public void PauseAndUnpauseGame() { // to be called by UIManager when pause button is pressed - fix later
-        _gameStarted = !_gameStarted;
-        if (_gameStarted) {
-            Debug.Log("Game Unpaused");
-        }
-        else
-        {
-            Debug.Log("Game Paused");
-        }
+    public void PauseGame() {
+        _gameStarted = false; 
+        Debug.Log("Game Paused");
+        _uiManager.pauseMenuOpen();
+        Time.timeScale = 0f;
+
     }
-    
+
+    public void ResumeGame() {
+        _gameStarted = true;
+        Debug.Log("Game Unpaused");
+        Time.timeScale = 1f;
+    }
+
 }
